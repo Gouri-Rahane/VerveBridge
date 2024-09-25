@@ -1,0 +1,197 @@
+/*
+ Bank Management System
+ 1. Research: Look into the basic functionalities of a bank management system.
+2. Design: Plan the features such as account creation, deposit, withdrawal, balance inquiry, and account management.
+3. Develop: Build the bank management system using C++. Include:
+   - User authentication.
+   - Transaction management.
+   - Error handling.
+4. Test: Ensure the system works smoothly and securely.
+*/
+#include<iostream>
+#include<vector>
+#include<iomanip> // For formatting output
+using namespace std;
+
+class Account {
+    private:
+        int accountNumber;
+        string accountHolderName;
+        float balance;
+    public:
+        Account(int accNo, string accName, float initialDeposit) {
+            accountNumber = accNo;
+            accountHolderName = accName;
+            balance = initialDeposit;
+        }
+
+        int getAccountNumber() {
+            return accountNumber;
+        }
+
+        string getAccountHolderName() {
+            return accountHolderName;
+        }
+
+        float getBalance() {
+            return balance;
+        }
+
+        void deposit(float amount) {
+            balance += amount;
+            cout << "Amount deposited successfully. New balance: " << balance << endl;
+        }
+
+        void withdraw(float amount) {
+            if (amount <= balance) {
+                balance -= amount;
+                cout << "Amount withdrawn successfully. New balance: " << balance << endl;
+            } else {
+                cout << "Insufficient balance. Current balance: " << balance << endl;
+            }
+        }
+
+        void displayAccountDetails() {
+            cout << fixed << setprecision(2); // Format balance to 2 decimal places
+            cout << "Account Number: " << accountNumber << endl;
+            cout << "Account Holder: " << accountHolderName << endl;
+            cout << "Current Balance: $" << balance << endl;
+        }
+};
+
+class Bank {
+    private:
+        vector<Account> accounts;
+    public:
+        void createAccount() {
+            int accountNumber;
+            string accountHolderName;
+            float initialDeposit;
+
+            cout << "Enter account number: ";
+            cin >> accountNumber;
+            cout << "Enter account holder name: ";
+            cin.ignore(); // To ignore leftover newline character from previous input
+            getline(cin, accountHolderName);
+            cout << "Enter initial deposit amount: ";
+            cin >> initialDeposit;
+
+            Account newAccount(accountNumber, accountHolderName, initialDeposit);
+            accounts.push_back(newAccount);
+            cout << "Account created successfully!\n";
+        }
+
+        void displayAllAccounts() {
+            if (accounts.empty()) {
+                cout << "No accounts found.\n";
+            } else {
+                for (auto &acc : accounts) {
+                    acc.displayAccountDetails();
+                    cout << "------------------------\n";
+                }
+            }
+        }
+
+        void depositMoney() {
+            int accountNumber;
+            float amount;
+            bool accountFound = false;
+
+            cout << "Enter account number: ";
+            cin >> accountNumber;
+            for (auto &acc : accounts) {
+                if (acc.getAccountNumber() == accountNumber) {
+                    cout << "Enter amount to deposit: ";
+                    cin >> amount;
+                    acc.deposit(amount);
+                    accountFound = true;
+                    break;
+                }
+            }
+            if (!accountFound) {
+                cout << "Account not found.\n";
+            }
+        }
+
+        void withdrawMoney() {
+            int accountNumber;
+            float amount;
+            bool accountFound = false;
+
+            cout << "Enter account number: ";
+            cin >> accountNumber;
+            for (auto &acc : accounts) {
+                if (acc.getAccountNumber() == accountNumber) {
+                    cout << "Enter amount to withdraw: ";
+                    cin >> amount;
+                    acc.withdraw(amount);
+                    accountFound = true;
+                    break;
+                }
+            }
+            if (!accountFound) {
+                cout << "Account not found.\n";
+            }
+        }
+
+        void balanceInquiry() {
+            int accountNumber;
+            bool accountFound = false;
+
+            cout << "Enter account number: ";
+            cin >> accountNumber;
+            for (auto &acc : accounts) {
+                if (acc.getAccountNumber() == accountNumber) {
+                    acc.displayAccountDetails();
+                    accountFound = true;
+                    break;
+                }
+            }
+            if (!accountFound) {
+                cout << "Account not found.\n";
+            }
+        }
+};
+
+int main() {
+    Bank bank;
+    int choice;
+
+    do {
+        cout << "\n----Bank Management System----\n";
+        cout << "1. Create Account\n";
+        cout << "2. Display All Accounts\n";
+        cout << "3. Deposit Money\n";
+        cout << "4. Withdraw Money\n";
+        cout << "5. Balance Inquiry\n";
+        cout << "6. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                bank.createAccount();
+                break;
+            case 2:
+                bank.displayAllAccounts();
+                break;
+            case 3:
+                bank.depositMoney();
+                break;
+            case 4:
+                bank.withdrawMoney();
+                break;
+            case 5:
+                bank.balanceInquiry();
+                break;
+            case 6:
+                cout << "Exiting...\n";
+                break;
+            default:
+                cout << "Invalid choice. Please try again.\n";
+                break;
+        }
+    } while (choice != 6);
+
+    return 0;
+}
