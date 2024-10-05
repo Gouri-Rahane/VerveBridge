@@ -1,0 +1,180 @@
+/*Develop a Library Management System using C++ that efficiently manages library resources and user interactions.*/
+#include <iostream>
+#include <vector>
+#include <string>
+#include <ctime>
+#include <iomanip> // For date formatting
+
+using namespace std;
+
+// Book Class
+class Book {
+public:
+    string title;
+    string author;
+    string ISBN;
+    bool isAvailable;
+
+    Book(string t, string a, string i) : title(t), author(a), ISBN(i), isAvailable(true) {}
+};
+
+// Borrower Class
+class Borrower {
+public:
+    string name;
+    string borrowerID;
+
+    Borrower(string n, string id) : name(n), borrowerID(id) {}
+};
+
+// Transaction Class
+class Transaction {
+public:
+    Book* book;
+    Borrower borrower;
+    time_t checkoutDate;
+    time_t dueDate;
+    bool isReturned;
+
+    Transaction(Book* b, Borrower br) : book(b), borrower(br), isReturned(false) {
+        // Set checkout date to now
+        time(&checkoutDate);
+
+        // Set due date to 14 days from checkout
+        tm* dueTime = localtime(&checkoutDate);
+        dueTime->tm_mday += 14;
+        dueDate = mktime(dueTime);
+    }
+
+    // Calculate fine if overdue
+    double calculateFine() const {
+        if (isReturned) return 0.0;
+        
+        time_t now;
+        time(&now);
+
+        double fine = 0.0;
+        double daysOverdue = difftime(now, dueDate) / (60 * 60 * 24);
+        if (daysOverdue > 0) {
+            fine = daysOverdue * 1.00; // $1 per day overdue
+        }
+
+        return fine;
+    }
+
+    // Mark the book as returned
+    void returnBook() {
+        isReturned = true;
+        book->isAvailable = true;
+    }
+};
+
+// Library Management System Class
+class Library {
+private:
+    vector<Book> books;
+    vector<Transaction> transactions;
+
+public:
+    void addBook(const Book& book) {
+        books.push_back(book);
+    }
+
+    vector<Book> searchBooks(const string& query, const string& criteria) {
+        vector<Book> results;
+        for (auto& book : books) {
+            if ((criteria == "title" && book.title.find(query) != string::npos) ||
+                (criteria == "author" && book.author.find(query) != string::npos) ||
+                (criteria == "ISBN" && book.ISBN.find(query) != string::npos)) {
+                results.push_back(book);
+            }
+        }
+        return results;
+    }
+
+    bool checkoutBook(const string& isbn, const Borrower& borrower) {
+        for (auto& book : books) {
+            if (book.ISBN == isbn && book.isAvailable) {
+                book.isAvailable = false;
+                transactions.push_back(Transaction(&book, borrower));
+                cout << "Book checked out successfully. Due date is in 14 days.\n";
+                return true;
+            }
+        }
+        cout << "Book is not available for checkout.\n";
+        return false;
+    }
+
+    bool returnBook(const string& isbn) {
+        for (auto& transaction : transactions) {
+            if (transaction.book->ISBN == isbn && !transaction.isReturned) {
+                double fine = transaction.calculateFine();
+                if (fine > 0) {
+                    cout << "Book is overdue. Fine is $" << fine << ".\n";
+                }
+                transaction.returnBook();
+                cout << "Book returned successfully.\n";
+                return true;
+            }
+        }
+        cout << "Book return failed. Maybe the book wasn't checked out?\n";
+        return false;
+    }
+
+    void displayMenu() {
+        cout << "Library Management System\n";
+        cout << "1. Search for a book\n";
+        cout << "2. Checkout a book\n";
+        cout << "3. Return a book\n";
+        cout << "4. Exit\n";
+    }
+};
+
+// Main Function
+int main() {
+    Library library;
+
+    // Adding sample books to the library
+    library.addBook(Book("C++ Primer", "Stanley B. Lippman", "0321714113"));
+    library.addBook(Book("Effective Modern C++", "Scott Meyers", "1491903996"));
+    library.addBook(Book("The Pragmatic Programmer", "Andrew Hunt", "020161622X"));
+
+    int choice;
+    while (true) {
+        library.displayMenu();
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        if (choice == 1) {
+            string query;
+            cout << "Enter search query: ";
+            cin >> query;
+            auto results = library.searchBooks(query, "title");
+            for (const auto& book : results) {
+                cout << "Found: " << book.title << " by " << book.author << "\n";
+            }
+        } else if (choice == 2) {
+            string isbn;
+            Borrower borrower("", "");
+
+            cout << "Enter ISBN of the book to checkout: ";
+            cin >> isbn;
+            cout << "Enter borrower's name: ";
+            cin >> borrower.name;
+            cout << "Enter borrower ID: ";
+            cin >> borrower.borrowerID;
+
+            library.checkoutBook(isbn, borrower);
+        } else if (choice == 3) {
+            string isbn;
+            cout << "Enter ISBN of the book to return: ";
+            cin >> isbn;
+
+            library.returnBook(isbn);
+        } else if (choice == 4) {
+            break;
+        }
+    }
+
+    return 0;
+}
