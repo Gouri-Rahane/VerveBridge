@@ -1,0 +1,69 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <ctime>
+#include <mutex>
+
+class ParkingSpace {
+public:
+    int id;
+    bool isAvailable;
+    std::string vehicleId;
+    time_t timestamp;
+
+    ParkingSpace(int id) : id(id), isAvailable(true), vehicleId("") {}
+    void occupy(const std::string &vehicle) { /* ... */ }
+    void vacate() { /* ... */ }
+};
+
+class Billing {
+public:
+    double ratePerHour;
+
+    Billing(double rate) : ratePerHour(rate) {}
+    double calculateBill(time_t entryTime, time_t exitTime) { /* ... */ }
+};
+
+class User {
+public:
+    int id;
+    std::string name;
+    ParkingSpace *reservedSlot;
+    time_t entryTime, exitTime;
+
+    void reserveSpot(ParkingSpace &spot) { /* ... */ }
+    void enter() { /* ... */ }
+    void exit() { /* ... */ }
+};
+
+class Admin {
+public:
+    std::string adminId, password;
+    void viewStats() { /* ... */ }
+    void addSlot(std::vector<ParkingSpace> &parkingSpaces) { /* ... */ }
+};
+
+class ParkingSystem {
+public:
+    std::vector<ParkingSpace> parkingSpaces;
+    std::vector<User> users;
+    Billing billingSystem;
+    Admin admin;
+    std::mutex mtx;
+
+    ParkingSystem(int numSpaces, double rate) : billingSystem(rate) {
+        for (int i = 0; i < numSpaces; i++) {
+            parkingSpaces.push_back(ParkingSpace(i + 1));
+        }
+    }
+    void displayAvailableSpaces() { /* ... */ }
+    void processEntry(User &user) { /* ... */ }
+    void processExit(User &user) { /* ... */ }
+};
+
+int main() {
+    // Initialize system
+    ParkingSystem system(100, 10.0); // 100 slots, $10 per hour
+
+    // UI loop to handle user/admin interactions
+}
